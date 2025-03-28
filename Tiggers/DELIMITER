@@ -1,0 +1,71 @@
+drop database exercicio;
+create database exercicio;
+use exercicio;
+
+Create table Funcionario (
+id_funcionario int auto_increment primary key,
+nome varchar (50) not null
+);
+
+DELIMITER //
+Create procedure
+Insert_funcionarios ()
+begin
+declare i int default 1;
+while i <= 100 do 
+insert into Funcionario (nome) values (concat('Funcionario', i));
+set i = i +1;
+end while;
+end //
+DELIMITER ;
+Call Insert_funcionarios ();
+Select * from Funcionario;
+
+Create table Departamento (
+id int auto_increment primary key,
+nome_departamento varchar (50)
+);
+
+DELIMITER //
+CREATE procedure Insert_Departamento ()
+begin
+declare i int default 1;
+while i <= 3 do 
+Insert into Departamento (nome_departamento) values (concat('Departamento', i));
+set i = i +1;
+end while;
+end //
+DELIMITER ;
+Call Insert_Departamento ();
+
+
+Create table Funcionario_Departamento (
+id_fuc_depart int auto_increment primary key,
+id_funcionario int,
+id int,
+foreign key (id_funcionario) references Funcionario (id_funcionario), 
+foreign key (id) references departamento (id)
+);     
+
+Insert into Funcionario_Departamento (id_funcionario, id) values (5,1);
+
+Create table Log_Departamento (
+id int auto_increment primary key,
+funcionario_id int,
+departamento_antigo varchar (50),
+departamento_novo varchar (50),
+data_alteracao datetime default current_timestamp on update current_timestamp 
+);
+ 
+ -- Criação de um Tigger para Update 
+DELIMITER //
+CREATE TRIGGER trg_after_update_departamento
+AFTER UPDATE ON Funcionario_Departamento
+FOR EACH ROW
+BEGIN
+    IF OLD.id <> NEW.id THEN 
+        INSERT INTO log_departamento (funcionario_id, departamento_antigo, departamento_novo)
+        VALUES (OLD.id_funcionario, OLD.id, NEW.id);
+    END IF;
+END //
+DELIMITER ;
