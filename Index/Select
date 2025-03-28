@@ -1,0 +1,200 @@
+DROP DATABASE IF EXISTS exercicio;
+CREATE DATABASE exercicio;
+USE exercicio;
+
+-- Criar a tabela funcionarios
+CREATE TABLE funcionarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome TEXT NOT NULL,
+    salario NUMERIC(10,2) NOT NULL,
+    departamento TEXT NOT NULL
+);
+
+-- Criar a procedure para inserir os funcionários
+DELIMITER //
+CREATE PROCEDURE insert_funcionarios()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE salario NUMERIC(10,2);
+    WHILE i < 50000 DO
+        SET salario = 3000 + (RAND() * 3000);
+
+        IF salario > 99999999.99 THEN
+            SET salario = 99999999.99;
+        END IF;
+
+        INSERT INTO funcionarios (nome, salario, departamento)
+        VALUES (
+            CONCAT('funcionario', i),
+            salario,
+            CASE
+                WHEN i % 3 = 0 THEN 'TI'
+                WHEN i % 3 = 1 THEN 'Financeiro'
+                ELSE 'RH'
+            END
+        );
+
+        SET i = i + 1;
+    END WHILE;
+END //
+DELIMITER ;
+
+-- Chamar a procedure para inserir os dados
+CALL insert_funcionarios();
+SELECT * from funcionarios;
+
+-- Selecionar funcionários com salario maior que 200
+SELECT * FROM funcionarios WHERE salario > 200;
+
+-- Criar a tabela horaextra
+CREATE TABLE horaextra (
+    id_horas SERIAL PRIMARY KEY,
+    horas_extras TIME NOT NULL,
+    id_funcionario INT,
+    FOREIGN KEY (id_funcionario) REFERENCES funcionarios(id)
+);
+
+-- Criar a procedure para inserir horas extras
+DELIMITER //
+CREATE PROCEDURE insert_horas()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE horas_rand INT;
+    WHILE i < 50000 DO
+        -- Gerar horas aleatórias entre 1 e 10
+        SET horas_rand = FLOOR(1 + (RAND() * 10));
+
+        -- Inserir as horas extras aleatórias para um funcionário com ID entre 1 e 50.000
+        INSERT INTO horaextra (horas_extras, id_funcionario)
+        VALUES (
+            SEC_TO_TIME(horas_rand * 3600), -- Converter as horas para o formato TIME
+            FLOOR(1 + (RAND() * 50000)) -- ID aleatório de funcionário entre 1 e 50.000
+        );
+
+        SET i = i + 1;
+    END WHILE;
+END //
+DELIMITER ;
+
+-- Chamar a procedure para inserir as horas extras
+CALL insert_horas();
+
+-- Contar o número de funcionários e horas extras
+SELECT COUNT(*) FROM funcionarios;
+SELECT COUNT(*) FROM horaextra;
+
+-- Criar índice na tabela funcionarios para o campo salario
+CREATE INDEX idx_salario ON funcionarios (salario);
+
+-- Criar índice na tabela horaextra para o campo id_funcionario (opcional, mas recomendado)
+CREATE INDEX idx_id_funcionario ON horaextra (id_funcionario);
+
+-- Verificar dados
+SELECT * FROM funcionarios LIMIT 10;
+
+CREATE TABLE clientes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome TEXT NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20),
+    endereco TEXT
+);
+DELIMITER //
+
+CREATE PROCEDURE insert_clientes()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE nome_cliente TEXT;
+    DECLARE email_cliente VARCHAR(255);
+    DECLARE telefone_cliente VARCHAR(20);
+    DECLARE endereco_cliente TEXT;
+
+    WHILE i < 1000000 DO
+        -- Gerar nome e email fictícios
+        SET nome_cliente = CONCAT('Cliente', i);
+        SET email_cliente = CONCAT('cliente', i, 'joao@email.com');
+        SET telefone_cliente = CONCAT('9999', LPAD(i, 4, '0')); -- Exemplo de telefone fictício
+        SET endereco_cliente = CONCAT('Endereço', i); -- Endereço fictício
+
+        -- Inserir o cliente na tabela clientes
+        INSERT INTO clientes (nome, email, telefone, endereco)
+        VALUES (
+            nome_cliente,
+            email_cliente,
+            telefone_cliente,
+            endereco_cliente
+        );
+
+        SET i = i + 1;
+    END WHILE;
+END //
+
+DELIMITER ;
+
+CREATE INDEX idx_email ON clientes(email);
+SET SESSION max_execution_time = 1000000;  
+
+CREATE TABLE artigos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(200),
+    conteudo TEXT
+);
+
+INSERT INTO artigos (titulo, conteudo) VALUES
+('O futuro da tecnologia', 'Java e Pthon estao cada vez mais fortes no mercado'),
+('Análise de Dados', 'Como python auxilia na busca por dados');
+
+CREATE FULLTEXT INDEX idx_conteudo ON artigos(conteudo);-- busca por palavras no campo conteudo, especialmente em tabelas com grandes volumes de texto.
+SHOW INDEXES FROM artigos;
+DROP INDEX idx_conteudo ON artigos;
+
+
+SELECT * FROM artigos
+WHERE MATCH(conteudo) AGAINST('tecnologia' IN NATURAL LANGUAGE MODE); -- consulta otimizada da palavra tecnologia.\
+
+CREATE TABLE transacoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    valor DECIMAL(12, 2) NOT NULL,
+    data DATETIME NOT NULL
+);
+
+DELIMITER //
+
+CREATE PROCEDURE insert_transacoes()
+BEGIN
+    DECLARE i INT DEFAULT 0;
+    DECLARE valor_random DECIMAL(10,2);
+    DECLARE data_random DATETIME;
+
+    WHILE i < 1000 DO
+        -- Gerando valor aleatório entre 50 e 500
+        SET valor_random = 50 + (RAND() * 450);
+        
+        -- Gerando uma data aleatória nos últimos 30 dias
+        SET data_random = DATE_SUB(CURRENT_DATE, INTERVAL FLOOR(RAND() * 30) DAY);
+        
+        -- Inserir uma transação na tabela
+        INSERT INTO transacoes (valor, data) 
+        VALUES (valor_random, data_random);
+
+        SET i = i + 1;
+    END WHILE;
+END //
+
+DELIMITER ;
+
+CALL insert_transacoes();
+select * from transacoes;
+
+CREATE INDEX idx_valor ON transacoes(valor);
+SELECT * FROM transacoes WHERE valor > 100;
+CREATE INDEX idx_valor_1000 ON transacoes(valor);
+SHOW INDEXES FROM transacoes;
+DROP INDEX idx_valor_1000 ON transacoes;
+CREATE INDEX idx_valor_1000 ON transacoes(valor);
+
+
+
+
+
+
