@@ -1,0 +1,80 @@
+drop schema EMPRESA;
+create schema if not exists EMPRESA default character set utf8;
+Use EMPRESA;
+
+CREATE TABLE FUNCIONARIO (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    cpf VARCHAR(11) NOT NULL,
+    nome VARCHAR(50) NOT NULL,
+    profissão VARCHAR (50),
+    id_Departamento INT,
+    constraint FK_Departamento foreign key (id_Departamento) references FUNCIONARIO (id)
+    )engine=InnoDB; 
+    
+    INSERT INTO FUNCIONARIO (cpf, nome, profissao, idDepartamento) 
+VALUES ('123.456.789.01', 'Carlos Silva', 'ATENDENTE', 1),
+       ('987.654.321.00', 'Ana Souza', 'GERENTE', 2);
+    
+    SELECT * FROM FUNCIONARIO;
+    
+    CREATE TABLE DEPARTAMENTO (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL
+);
+
+INSERT INTO DEPARTAMENTO (nome) VALUES ('ATENDENTE'), ('GERENTE'),('MARKETING'),('LOGISTICA');
+
+select * from DEPARTAMENTO;
+
+
+INSERT INTO FUNCIONARIO (cpf, nome, profissao, idDepartamento) 
+VALUES ('123.456.789.01', 'Carlos Silva', 'ATENDENTE', 1),
+       ('987.654.321.00', 'Ana Souza', 'GERENTE', 2);
+      
+   
+
+CREATE TABLE CLIENTES (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    cpf VARCHAR(11) NOT NULL,
+    telefone VARCHAR(15),
+    aquisicoes INT,
+    idPedidos INT,
+    CONSTRAINT FK_Pedidos_Clientes FOREIGN KEY (idPedidos) REFERENCES PEDIDOS(id)
+);
+
+
+CREATE TABLE PRODUTOS (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    preco DECIMAL(10, 2) NOT NULL,
+    cores VARCHAR(50),
+    composicao VARCHAR(50),
+    area VARCHAR(50),
+    ano INT,
+    tipo VARCHAR(50),
+    idPedidos INT,
+    CONSTRAINT FK_Pedidos_Produtos FOREIGN KEY (idPedidos) REFERENCES PEDIDOS(id)
+);
+
+
+CREATE TABLE LOJAS (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    endereco VARCHAR(100) NOT NULL,
+    qtde_vendas INT,
+    idPedidos INT,
+    CONSTRAINT FK_Pedidos_Lojas FOREIGN KEY (idPedidos) REFERENCES PEDIDOS(id)
+);
+
+
+CREATE TABLE PEDIDOS (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    aquisicoes INT,
+    valor DECIMAL(10, 2),
+    idProdutos INT,
+    idClientes INT,
+    idFuncionarios INT,
+    idLojas INT,
+    CONSTRAINT FK_Produtos_Pedidos FOREIGN KEY (idProdutos) REFERENCES PRODUTOS(id),
+    CONSTRAINT FK_Clientes_Pedidos FOREIGN KEY (idClientes) REFERENCES CLIENTES(id),
+    CONSTRAINT FK_Funcionarios_Pedidos FOREIGN KEY (idFuncionarios) REFERENCES FUNCIONARIOS(id),
+    CONSTRAINT FK_Lojas_Pedidos FOREIGN KEY (idLojas) REFERENCES LOJAS(id)
+);
