@@ -1,0 +1,165 @@
+drop schema Projeto;
+
+create schema if not exists Projeto default character set utf8;
+Use Projeto;
+
+ -- Tabela EMPRESA
+CREATE TABLE EMPRESA (
+    id INT PRIMARY KEY,
+    Loja VARCHAR(255)
+);
+
+INSERT INTO EMPRESA (id, Loja) VALUES (1, 'Velours Parfum');
+SELECT * FROM EMPRESA;
+
+-- Tabela LOJA
+CREATE TABLE LOJA (
+    id INT PRIMARY KEY,
+    idEmpresa INT,
+    FOREIGN KEY (idEmpresa) REFERENCES EMPRESA(id)
+);
+INSERT INTO LOJA (id, idEmpresa) VALUES (1,1);
+SELECT * FROM LOJA;
+
+ -- Tabela CLIENTES
+CREATE TABLE CLIENTES (
+    id INT PRIMARY KEY NOT NULL,
+    Nome VARCHAR(255),
+    CPF CHAR(11),
+    Telefone VARCHAR(15),
+    idLoja INT,
+    FOREIGN KEY (idLoja) REFERENCES Loja(id)
+);
+
+INSERT INTO CLIENTES (id,Nome, CPF, Telefone, idLoja) 
+VALUES ('1', 'João Silva', '12345678901', '1111-1111', 1);
+INSERT INTO CLIENTES (id, Nome, CPF, Telefone, idLoja) 
+VALUES ('2','Maria Souza', '09876543210', '1232-2221', 1);
+INSERT INTO CLIENTES (id, Nome, CPF, Telefone, idLoja) 
+VALUES ('3','Jenyfer', '23456712221', '1234-5432', 1);
+INSERT INTO CLIENTES (id, Nome, CPF, Telefone, idLoja) 
+VALUES ('4','Paulo Cesar', '09876543210', '2222-2222', 1);
+SELECT * FROM CLIENTES;
+
+CREATE TABLE CLIENTE_LOJA (
+    idCliente INT,
+    idLoja INT,
+    PRIMARY KEY (idCliente, idLoja),
+    FOREIGN KEY (idCliente) REFERENCES CLIENTES(id),
+    FOREIGN KEY (idLoja) REFERENCES LOJA(id)
+);
+INSERT INTO CLIENTE_LOJA (idCliente, idLoja) 
+VALUES (1, 1), (2, 1), (3, 1), (4, 1);
+
+SELECT 
+    CLIENTES.Nome AS Cliente,
+    CLIENTES.CPF AS CPF,
+    LOJA.id AS LojaID,
+    LOJA.idEmpresa AS EmpresaID,
+    EMPRESA.Loja AS Empresa
+FROM CLIENTES
+JOIN CLIENTE_LOJA ON CLIENTES.id = CLIENTE_LOJA.idCliente
+JOIN LOJA ON CLIENTE_LOJA.idLoja = LOJA.id
+JOIN EMPRESA ON LOJA.idEmpresa = EMPRESA.id;
+
+-- Tabela PRODUTOS
+CREATE TABLE PRODUTOS (
+    id INT PRIMARY KEY NOT NULL,
+    Nome VARCHAR(255),
+    Codigo VARCHAR(50),
+    Preco DECIMAL(5, 2),
+    idEmpresa INT,
+    FOREIGN KEY (idEmpresa) REFERENCES EMPRESA (id)
+);
+
+INSERT INTO PRODUTOS (id, Nome, Codigo, Preco, idEmpresa) 
+VALUES ('4', 'LeBelle', 'A331', 230.00, 1);
+INSERT INTO PRODUTOS (id, Nome, Codigo, Preco, idEmpresa) 
+VALUES ('5','Glamuor', 'J231', 180.00, 1);
+INSERT INTO PRODUTOS (id, Nome, Codigo, Preco, idEmpresa) 
+VALUES ('6', 'RichMan', 'B241', 198.90, 1);
+INSERT INTO PRODUTOS (id, Nome, Codigo, Preco, idEmpresa)
+VALUES ('7', 'QrCode', 'C921', 259.90, 1);
+
+SELECT 
+    PRODUTOS.id AS ProdutoID,
+    PRODUTOS.Nome AS Produto,
+    PRODUTOS.Preco AS Preco,
+    EMPRESA.Loja AS Empresa
+FROM PRODUTOS
+JOIN EMPRESA ON PRODUTOS.idEmpresa = EMPRESA.id;
+
+-- Tabela DEPARTAMENTO
+CREATE TABLE DEPARTAMENTO (
+    id INT PRIMARY KEY,
+    Nome VARCHAR(255),
+    idEmpresa INT,
+    FOREIGN KEY (idEmpresa) REFERENCES EMPRESA(id)
+);
+
+INSERT INTO DEPARTAMENTO (id, Nome, idEmpresa) 
+VALUES ('8', 'Vendas', 1);
+INSERT INTO DEPARTAMENTO (id, Nome, idEmpresa) 
+VALUES ('9', 'RH', 1);
+INSERT INTO DEPARTAMENTO (id, Nome, idEmpresa) 
+VALUES ('3', 'Financeiro', 1);
+INSERT INTO DEPARTAMENTO (id, Nome, idEmpresa) 
+VALUES ('4', 'Atendimento', 1);
+SELECT * FROM DEPARTAMENTO;
+
+-- Tabela FUNCIONARIOS
+CREATE TABLE FUNCIONARIOS (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    Nome VARCHAR(255),
+    CPF CHAR(11),
+    Cargo VARCHAR(255),
+    Departamento INT,
+    idDepartamento INT,
+    FOREIGN KEY (idDepartamento) REFERENCES DEPARTAMENTO(id)
+);
+
+INSERT INTO FUNCIONARIOS (Nome, CPF, Cargo, Departamento, idDepartamento) 
+VALUES ('Amanda Almeida', '32165498700', 'Vendedor', 1, 8);
+INSERT INTO FUNCIONARIOS (Nome, CPF, Cargo, Departamento, idDepartamento) 
+VALUES ('Ana Pereira', '65498732100', 'Recusos Humanos', 1,9);
+INSERT INTO FUNCIONARIOS (Nome, CPF, Cargo, Departamento, idDepartamento) 
+VALUES ('Alice Chagas', '32165498700', 'Auxiliar Adm', 1,3);
+INSERT INTO FUNCIONARIOS (Nome, CPF, Cargo, Departamento, idDepartamento) 
+VALUES ('Laura Pereira', '65498732100', 'Atendente', 1,4);
+
+
+
+SELECT 
+    FUNCIONARIOS.id AS FuncionarioID,
+    FUNCIONARIOS.Nome AS Funcionario,
+    FUNCIONARIOS.Cargo AS Cargo,
+    DEPARTAMENTO.Nome AS Departamento,
+    EMPRESA.Loja AS Empresa
+FROM FUNCIONARIOS
+JOIN DEPARTAMENTO ON FUNCIONARIOS.idDepartamento = DEPARTAMENTO.id
+JOIN EMPRESA ON DEPARTAMENTO.idEmpresa = EMPRESA.id;
+
+SELECT 
+    Loja.id AS LojaID,
+    EMPRESA.Loja AS Empresa,
+    CLIENTES.Nome AS Cliente,
+    CLIENTES.CPF AS CPF,
+    PRODUTOS.Nome AS Produto,
+    PRODUTOS.Codigo AS Codigo,
+    PRODUTOS.Preco AS Preco,
+    DEPARTAMENTO.Nome AS Departamento,
+    FUNCIONARIOS.Nome AS Funcionarios,
+    FUNCIONARIOS.Cargo AS Cargos
+FROM LOJA
+JOIN EMPRESA ON LOJA.idEmpresa = EMPRESA.id
+JOIN CLIENTE_LOJA ON CLIENTE_LOJA.idLoja = LOJA.id
+JOIN CLIENTES ON CLIENTE_LOJA.idCliente = CLIENTES.id
+JOIN PRODUTOS ON PRODUTOS.idEmpresa = EMPRESA.id
+JOIN DEPARTAMENTO ON DEPARTAMENTO.idEmpresa = EMPRESA.id
+JOIN FUNCIONARIOS ON FUNCIONARIOS.idDepartamento = DEPARTAMENTO.id
+ORDER BY 
+    LOJA.id, 
+    CLIENTES.Nome, 
+    PRODUTOS.Nome, 
+    DEPARTAMENTO.Nome, 
+    FUNCIONARIOS.Nome;
